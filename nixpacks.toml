@@ -1,5 +1,9 @@
 [phases.setup]
-nixPkgs = ["python311"]
+nixPkgs = [
+  "python311",
+  "mesa",
+  "glib"
+]
 
 [start]
 cmd = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
