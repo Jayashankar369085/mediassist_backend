@@ -1,15 +1,53 @@
 from app.parser.constants import *
 
 
+import re
+
 def is_medicine_line(text: str):
 
-    text = text.upper()
+    text = text.strip().upper()
 
-    return any(
-        text.startswith(prefix)
-        for prefix in MEDICINE_PREFIXES
-    )
+    # Existing prefix detection
+    if any(text.startswith(prefix) for prefix in MEDICINE_PREFIXES):
+        return True
 
+    # Reject obvious non-medicine lines
+    if any(item == text for item in IGNORE_LINES):
+        return False
+
+    # Ignore advice/instruction lines
+    if text.startswith("ADVICE"):
+        return False
+
+    if text.startswith("FOLLOW"):
+        return False
+
+    if text.startswith("DIAGNOSIS"):
+        return False
+
+    # Detect medicine names without prefixes
+    if re.match(r"^[A-Z][A-Z0-9/+(). -]{2,}$", text):
+
+        # Exclude common OCR noise
+        blacklist = [
+            "PATIENT",
+            "PRESCRIPTION",
+            "CLINICAL",
+            "FINDINGS",
+            "DATE",
+            "WEIGHT",
+            "HEIGHT",
+            "HEADACHE",
+            "FEVER",
+            "MALARIA",
+            "SUNDAY",
+            "TIMING",
+        ]
+
+        if not any(word in text for word in blacklist):
+            return True
+
+    return False
 
 def clean_name(text: str):
 
