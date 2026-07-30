@@ -122,36 +122,77 @@ class MedicineParser:
     # GROUP OCR INTO MEDICINE BLOCKS
     # -------------------------------------------------------
 
-    def build_blocks(self, lines: List[str]):
+    def build_blocks(self, lines):
 
         blocks = []
-
         current = []
-
-        for line in lines:
-
-            line = line.strip()
-
+    
+        for raw in lines:
+    
+            line = raw.strip()
+    
             if not line:
                 continue
-
+    
             if is_ignored_line(line):
                 continue
-
+    
+            upper = line.upper()
+    
+            # Skip hospital/doctor/details
+            skip_keywords = [
+                "DR.",
+                "DOCTOR",
+                "HOSPITAL",
+                "CLINIC",
+                "MBBS",
+                "MD",
+                "MS",
+                "AGE",
+                "SEX",
+                "DATE",
+                "PATIENT",
+                "DIAGNOSIS",
+                "CHIEF COMPLAINT",
+                "CLINICAL FINDINGS",
+                "INVESTIGATION",
+                "ADVICE",
+                "FOLLOW UP",
+                "SUBSTITUTE",
+                "EAT ",
+                "AVOID ",
+            ]
+    
+            if any(k in upper for k in skip_keywords):
+                continue
+    
+            # Start of a medicine?
+            medicine_start = False
+    
             if is_medicine_line(line):
-
+                medicine_start = True
+    
+            elif re.search(r"\b(MG|MCG|ML|GM|G)\b", upper):
+                medicine_start = True
+    
+            elif re.search(r"\b\d{2,4}\b", upper):
+                # e.g. ZOCLAR 500
+                medicine_start = True
+    
+            if medicine_start:
+    
                 if current:
                     blocks.append(current)
-
+    
                 current = [line]
-
-            elif current:
-
+                continue
+    
+            if current:
                 current.append(line)
-
+    
         if current:
             blocks.append(current)
-
+    
         return blocks
 
     # -------------------------------------------------------
