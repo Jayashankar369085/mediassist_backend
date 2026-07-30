@@ -1,33 +1,36 @@
 from app.parser.constants import *
-
-
 import re
 
-import re
 
 def is_medicine_line(text: str):
 
     text = text.strip().upper()
 
-    # Remove leading OCR junk like ), *, 1., 3, -, etc.
+    # Ignore quantity lines like (Tot:8 Tab)
+    if re.match(r"^\(TOT\s*:", text):
+        return False
+
+    # Remove OCR junk like ), *, 1., 3, -, etc.
     cleaned = re.sub(r'^[^A-Z]+', '', text)
 
     # Existing prefixes
     if any(cleaned.startswith(prefix) for prefix in MEDICINE_PREFIXES):
         return True
 
-    # Handle "3 CAP. ZOCLAR"
+    # Handle lines like "3 CAP. ZOCLAR 500"
     if re.search(r'\b(TAB|TAB\.|CAP|CAP\.|CAPSULE|SYRUP|SYP|INJ|INJECTION)\b', cleaned):
         return True
 
     return False
 
+
 def clean_name(text: str):
 
+    # Remove OCR junk before extracting the name
+    text = re.sub(r'^[^A-Z]+', '', text)
+
     for prefix in MEDICINE_PREFIXES:
-
         if text.upper().startswith(prefix):
-
             return text[len(prefix):].strip()
 
     return text.strip()
