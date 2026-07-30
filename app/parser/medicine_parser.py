@@ -255,16 +255,23 @@ class MedicineParser:
 
     def parse(self, lines):
 
+        print("\n========= LINES RECEIVED =========")
+        for i, line in enumerate(lines):
+            print(f"{i+1}: {line}")
+    
         medicines = []
-
+    
         blocks = self.build_blocks(lines)
-
+    
+        print("\n========= BLOCKS =========")
+        for i, block in enumerate(blocks):
+            print(f"BLOCK {i+1}")
+            for l in block:
+                print("   ", l)
+    
         for block in blocks:
-
-            medicines.append(
-                self.parse_block(block)
-            )
-
+            medicines.append(self.parse_block(block))
+    
         return medicines
 
     # -------------------------------------------------------
